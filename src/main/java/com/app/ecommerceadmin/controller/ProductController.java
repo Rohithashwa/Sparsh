@@ -4,9 +4,7 @@ import com.app.ecommerceadmin.dto.request.ProductRequest;
 import com.app.ecommerceadmin.dto.response.ProductResponse;
 import com.app.ecommerceadmin.dto.wrapper.ApiAck;
 import com.app.ecommerceadmin.dto.wrapper.ApiResponse;
-import com.app.ecommerceadmin.entity.Product;
 import com.app.ecommerceadmin.service.contracts.ProductService;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -36,7 +33,7 @@ public class ProductController {
                 .buildAndExpand(response.id())
                 .toUri();
 
-        ApiResponse ack = new ApiResponse(
+        ApiResponse<ProductResponse> ack = new ApiResponse<>(
                 true,
                 "Product created successfully",
                 response
@@ -66,6 +63,15 @@ public class ProductController {
                 product
         ));
 
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<ApiAck> deleteProductById(@RequestParam long id) {
+        service.deleteProductById(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiAck(
+                true,
+                "deleted successfully"
+        ));
     }
 
 }
