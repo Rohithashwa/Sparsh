@@ -1,9 +1,9 @@
 package com.app.ecommerceadmin.service.contracts;
 
 import com.app.ecommerceadmin.dto.request.ProductRequest;
-import com.app.ecommerceadmin.entity.Product;
+import com.app.ecommerceadmin.dto.request.response.ProductResponse;
 
 public interface ProductService {
 
-    Product addProduct(ProductRequest product);
+    ProductResponse addProduct(ProductRequest product);
 }
