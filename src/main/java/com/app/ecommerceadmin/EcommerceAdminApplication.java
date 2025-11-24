@@ -1,4 +1,4 @@
-package com.app.ecommerce_admin;
+package com.app.ecommerceadmin;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
