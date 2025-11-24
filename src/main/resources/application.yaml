@@ -1,3 +1,8 @@
 spring:
   application:
     name: ecommerce-admin
+
+  datasource:
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    url: ${DATASOURCE_URL}
