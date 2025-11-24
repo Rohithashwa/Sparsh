@@ -6,4 +6,6 @@ import com.app.ecommerceadmin.entity.Product;
 public interface ProductService {
 
     Product addProduct(ProductRequest product);
+
+    Product getProduct();
 }
