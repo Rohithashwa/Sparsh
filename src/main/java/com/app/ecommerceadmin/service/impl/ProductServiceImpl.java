@@ -1,5 +1,6 @@
 package com.app.ecommerceadmin.service.impl;
 
+import com.app.ecommerceadmin.dto.request.ProductRequest;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
@@ -15,4 +16,15 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
 
+    @Override
+    public Product addProduct(ProductRequest product) {
+        Product pro = new Product();
+        pro.setName(product.name());
+        pro.setPrice(product.price());
+        pro.setDescription(product.description());
+        pro.setQuantity(product.quantity());
+        pro.setImageUrl(product.imageUrl());
+
+        return productRepository.save(pro);
+    }
 }
