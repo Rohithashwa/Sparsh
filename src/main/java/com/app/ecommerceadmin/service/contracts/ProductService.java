@@ -1,11 +1,15 @@
 package com.app.ecommerceadmin.service.contracts;
 
 import com.app.ecommerceadmin.dto.request.ProductRequest;
-import com.app.ecommerceadmin.entity.Product;
+import com.app.ecommerceadmin.dto.response.ProductResponse;
+
+import java.util.List;
 
 public interface ProductService {
 
-    Product addProduct(ProductRequest product);
+    ProductResponse addProduct(ProductRequest request);
 
-    Product getProduct();
+    List<ProductResponse> getAllProducts();
+
+    ProductResponse getProductById(long id);
 }
