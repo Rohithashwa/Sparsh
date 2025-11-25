@@ -16,4 +16,8 @@ public interface ProductService {
     void deleteProductById(Long id);
 
     ProductResponse updateProduct(Long id, ProductRequest request);
+
+    List<ProductResponse> getLowStockProduct(Integer quantity);
+
+    List<ProductResponse> searchProduct(String keyword, Double minPrice, Double maxPrice);
 }

@@ -14,13 +14,24 @@ import com.app.ecommerceadmin.repo.ProductRepository;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
 
-
+    private ProductResponse mapToResponse(Product product) {
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                product.getDescription(),
+                product.getQuantity(),
+                product.getImageUrl()
+        );
+    }
     @Override
     public ProductResponse addProduct(ProductRequest request) {
 
@@ -33,14 +44,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product saved = productRepository.save(product);
 
-        return new ProductResponse(
-                saved.getId(),
-                saved.getName(),
-                saved.getPrice(),
-                saved.getDescription(),
-                saved.getQuantity(),
-                saved.getImageUrl()
-        );
+        return mapToResponse(saved);
     }
 
     @Override
@@ -49,14 +53,8 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = productRepository.findAll();
 
         return products.stream()
-                .map(p -> new ProductResponse(
-                        p.getId(),
-                        p.getName(),
-                        p.getPrice(),
-                        p.getDescription(),
-                        p.getQuantity(),
-                        p.getImageUrl()
-                ))
+                .map(this::mapToResponse
+                )
                 .toList();
     }
 
@@ -65,14 +63,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-        return new ProductResponse(
-                product.getId(),
-                product.getName(),
-                product.getPrice(),
-                product.getDescription(),
-                product.getQuantity(),
-                product.getImageUrl()
-        );
+        return mapToResponse(product);
     }
 
     @Override
@@ -96,15 +87,21 @@ public class ProductServiceImpl implements ProductService {
                     if(request.imageUrl()!=null) existingProduct.setImageUrl(request.imageUrl());
                     return productRepository.save(existingProduct);
                 })
-                .map(savedProduct -> new ProductResponse(
-                        savedProduct.getId(),
-                        savedProduct.getName(),
-                        savedProduct.getPrice(),
-                        savedProduct.getDescription(),
-                        savedProduct.getQuantity(),
-                        savedProduct.getImageUrl()
-                ))
+                .map(this::mapToResponse)
                 .orElseThrow(()-> new ProductNotFoundException("Product not found"));
 
+    }
+
+    @Override
+    public List<ProductResponse> getLowStockProduct(Integer minStockLevel) {
+        List<Product> lowStock = productRepository.findByQuantityLessThan(minStockLevel);
+        return lowStock.stream().map(this::mapToResponse
+        ).toList();
+    }
+
+    @Override
+    public List<ProductResponse> searchProduct(String keyword, Double minPrice, Double maxPrice) {
+        List<Product> productList = productRepository.searchAndFilterProduct(keyword,minPrice,maxPrice);
+        return productList.stream().map(this::mapToResponse).toList();
     }
 }

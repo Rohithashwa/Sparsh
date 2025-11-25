@@ -79,4 +79,17 @@ public class ProductController {
         ProductResponse response = service.updateProduct(id,request);
         return ResponseEntity.ok(new ApiResponse<>(true,"Product Updated Successfully",response));
     }
+    @GetMapping("/low-stock")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getLowStockProduct(@RequestParam Integer quantity){
+       List<ProductResponse> listOfProducts = service.getLowStockProduct(quantity);
+       return ResponseEntity.ok(new ApiResponse<>(true,listOfProducts.size()+"product with stock less than "+quantity,listOfProducts));
+    }
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> searchProduct(@RequestParam String keyword, Double minPrice, Double maxPrice){
+        if(minPrice != null && maxPrice != null && minPrice > maxPrice){
+            throw  new IllegalArgumentException("Min price cannot be Max price");
+        }
+        List<ProductResponse> products = service.searchProduct(keyword,minPrice,maxPrice);
+        return ResponseEntity.ok(new ApiResponse<>(true,"Found"+products.size()+"Products",products));
+    }
 }
