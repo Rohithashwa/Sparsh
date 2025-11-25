@@ -61,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse getProductById(long id) {
+    public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
@@ -76,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void deleteProductById(long id) {
+    public void deleteProductById(Long id) {
 
         boolean exists = productRepository.existsById(id);
         if (!exists) {
@@ -85,6 +85,26 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(id);
     }
 
+    @Override
+    public ProductResponse updateProduct(Long id, ProductRequest request) {
+        return productRepository.findById(id)
+                .map(existingProduct -> {
+                    if(request.name() != null) existingProduct.setName(request.name());
+                    if (request.price()!=null) existingProduct.setPrice(request.price());
+                    if(request.description()!=null) existingProduct.setDescription(request.description());
+                    if(request.quantity()!=null) existingProduct.setQuantity(request.quantity());
+                    if(request.imageUrl()!=null) existingProduct.setImageUrl(request.imageUrl());
+                    return productRepository.save(existingProduct);
+                })
+                .map(savedProduct -> new ProductResponse(
+                        savedProduct.getId(),
+                        savedProduct.getName(),
+                        savedProduct.getPrice(),
+                        savedProduct.getDescription(),
+                        savedProduct.getQuantity(),
+                        savedProduct.getImageUrl()
+                ))
+                .orElseThrow(()-> new ProductNotFoundException("Product not found"));
 
-
+    }
 }
