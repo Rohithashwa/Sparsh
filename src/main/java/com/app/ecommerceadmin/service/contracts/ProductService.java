@@ -11,7 +11,13 @@ public interface ProductService {
 
     List<ProductResponse> getAllProducts();
 
-    ProductResponse getProductById(long id);
+    ProductResponse getProductById(Long id);
 
-    void deleteProductById(long id);
+    void deleteProductById(Long id);
+
+    ProductResponse updateProduct(Long id, ProductRequest request);
+
+    List<ProductResponse> getLowStockProduct(Integer quantity);
+
+    List<ProductResponse> searchProduct(String keyword, Double minPrice, Double maxPrice);
 }
