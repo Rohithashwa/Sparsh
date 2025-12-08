@@ -1,27 +1,95 @@
 package com.app.ecommerceadmin.controller;
 
 import com.app.ecommerceadmin.dto.request.ProductRequest;
-import com.app.ecommerceadmin.dto.request.response.ProductResponse;
+import com.app.ecommerceadmin.dto.response.ProductResponse;
+import com.app.ecommerceadmin.dto.wrapper.ApiAck;
+import com.app.ecommerceadmin.dto.wrapper.ApiResponse;
 import com.app.ecommerceadmin.service.contracts.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+import java.util.List;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/v1/product")
 @RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService service;
 
     @PostMapping
-    public ResponseEntity<ProductResponse> addProduct(@RequestBody ProductRequest product){
-       ProductResponse response = service.addProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<ApiResponse<ProductResponse>> addProduct(@RequestBody ProductRequest request) {
+
+        ProductResponse response = service.addProduct(request);
+
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
+
+        ApiResponse<ProductResponse> ack = new ApiResponse<>(
+                true,
+                "Product created successfully",
+                response
+        );
+
+        return ResponseEntity.created(location).body(ack);
     }
 
+
+    @GetMapping("/getAllProducts")
+    public  ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProduct() {
+        var productDetails = service.getAllProducts();
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "all product details fetched",
+                productDetails
+        ));
+    }
+
+    @GetMapping("/getProduct")
+    public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@RequestParam Long id) {
+
+        var product = service.getProductById(id);
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "found the product detail of id "+id,
+                product
+        ));
+
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<ApiAck> deleteProductById(@RequestParam Long id) {
+        service.deleteProductById(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiAck(
+                true,
+                "deleted successfully"
+        ));
+    }
+
+    @PatchMapping("/update")
+    public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(@RequestParam Long id, @RequestBody ProductRequest request){
+        ProductResponse response = service.updateProduct(id,request);
+        return ResponseEntity.ok(new ApiResponse<>(true,"Product Updated Successfully",response));
+    }
+    @GetMapping("/low-stock")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getLowStockProduct(@RequestParam Integer quantity){
+       List<ProductResponse> listOfProducts = service.getLowStockProduct(quantity);
+       return ResponseEntity.ok(new ApiResponse<>(true,listOfProducts.size()+"product with stock less than "+quantity,listOfProducts));
+    }
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> searchProduct(@RequestParam String keyword, Double minPrice, Double maxPrice){
+        if(minPrice != null && maxPrice != null && minPrice > maxPrice){
+            throw  new IllegalArgumentException("Min price cannot be Max price");
+        }
+        List<ProductResponse> products = service.searchProduct(keyword,minPrice,maxPrice);
+        return ResponseEntity.ok(new ApiResponse<>(true,"Found"+products.size()+"Products",products));
+    }
 }
