@@ -14,13 +14,24 @@ import com.app.ecommerceadmin.repo.ProductRepository;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
 
-
+    private ProductResponse mapToResponse(Product product) {
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                product.getDescription(),
+                product.getQuantity(),
+                product.getImageUrl()
+        );
+    }
     @Override
     public ProductResponse addProduct(ProductRequest request) {
 
@@ -33,14 +44,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product saved = productRepository.save(product);
 
-        return new ProductResponse(
-                saved.getId(),
-                saved.getName(),
-                saved.getPrice(),
-                saved.getDescription(),
-                saved.getQuantity(),
-                saved.getImageUrl()
-        );
+        return mapToResponse(saved);
     }
 
     @Override
@@ -49,34 +53,21 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = productRepository.findAll();
 
         return products.stream()
-                .map(p -> new ProductResponse(
-                        p.getId(),
-                        p.getName(),
-                        p.getPrice(),
-                        p.getDescription(),
-                        p.getQuantity(),
-                        p.getImageUrl()
-                ))
+                .map(this::mapToResponse
+                )
                 .toList();
     }
 
     @Override
-    public ProductResponse getProductById(long id) {
+    public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-        return new ProductResponse(
-                product.getId(),
-                product.getName(),
-                product.getPrice(),
-                product.getDescription(),
-                product.getQuantity(),
-                product.getImageUrl()
-        );
+        return mapToResponse(product);
     }
 
     @Override
-    public void deleteProductById(long id) {
+    public void deleteProductById(Long id) {
 
         boolean exists = productRepository.existsById(id);
         if (!exists) {
@@ -85,6 +76,32 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(id);
     }
 
+    @Override
+    public ProductResponse updateProduct(Long id, ProductRequest request) {
+        return productRepository.findById(id)
+                .map(existingProduct -> {
+                    if(request.name() != null) existingProduct.setName(request.name());
+                    if (request.price()!=null) existingProduct.setPrice(request.price());
+                    if(request.description()!=null) existingProduct.setDescription(request.description());
+                    if(request.quantity()!=null) existingProduct.setQuantity(request.quantity());
+                    if(request.imageUrl()!=null) existingProduct.setImageUrl(request.imageUrl());
+                    return productRepository.save(existingProduct);
+                })
+                .map(this::mapToResponse)
+                .orElseThrow(()-> new ProductNotFoundException("Product not found"));
 
+    }
 
+    @Override
+    public List<ProductResponse> getLowStockProduct(Integer minStockLevel) {
+        List<Product> lowStock = productRepository.findByQuantityLessThan(minStockLevel);
+        return lowStock.stream().map(this::mapToResponse
+        ).toList();
+    }
+
+    @Override
+    public List<ProductResponse> searchProduct(String keyword, Double minPrice, Double maxPrice) {
+        List<Product> productList = productRepository.searchAndFilterProduct(keyword,minPrice,maxPrice);
+        return productList.stream().map(this::mapToResponse).toList();
+    }
 }

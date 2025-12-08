@@ -54,7 +54,7 @@ public class ProductController {
     }
 
     @GetMapping("/getProduct")
-    public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@RequestParam long id) {
+    public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@RequestParam Long id) {
 
         var product = service.getProductById(id);
         return ResponseEntity.ok(new ApiResponse<>(
@@ -66,7 +66,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<ApiAck> deleteProductById(@RequestParam long id) {
+    public ResponseEntity<ApiAck> deleteProductById(@RequestParam Long id) {
         service.deleteProductById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiAck(
                 true,
@@ -74,4 +74,22 @@ public class ProductController {
         ));
     }
 
+    @PatchMapping("/update")
+    public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(@RequestParam Long id, @RequestBody ProductRequest request){
+        ProductResponse response = service.updateProduct(id,request);
+        return ResponseEntity.ok(new ApiResponse<>(true,"Product Updated Successfully",response));
+    }
+    @GetMapping("/low-stock")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getLowStockProduct(@RequestParam Integer quantity){
+       List<ProductResponse> listOfProducts = service.getLowStockProduct(quantity);
+       return ResponseEntity.ok(new ApiResponse<>(true,listOfProducts.size()+"product with stock less than "+quantity,listOfProducts));
+    }
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> searchProduct(@RequestParam String keyword, Double minPrice, Double maxPrice){
+        if(minPrice != null && maxPrice != null && minPrice > maxPrice){
+            throw  new IllegalArgumentException("Min price cannot be Max price");
+        }
+        List<ProductResponse> products = service.searchProduct(keyword,minPrice,maxPrice);
+        return ResponseEntity.ok(new ApiResponse<>(true,"Found"+products.size()+"Products",products));
+    }
 }
