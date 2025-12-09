@@ -32,18 +32,19 @@ public class ProductServiceImpl implements ProductService {
                 product.getImageUrl()
         );
     }
-    @Override
-    public ProductResponse addProduct(ProductRequest request) {
-
-        Product product = new Product();
+    private Product mapToProduct(ProductRequest request, Product product){
         product.setName(request.name());
         product.setPrice(request.price());
         product.setDescription(request.description());
         product.setQuantity(request.quantity());
         product.setImageUrl(request.imageUrl());
+        return product;
+    }
+    @Override
+    public ProductResponse addProduct(ProductRequest request) {
 
+        Product product = mapToProduct(request, new Product());
         Product saved = productRepository.save(product);
-
         return mapToResponse(saved);
     }
 
@@ -79,17 +80,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         return productRepository.findById(id)
-                .map(existingProduct -> {
-                    if(request.name() != null) existingProduct.setName(request.name());
-                    if (request.price()!=null) existingProduct.setPrice(request.price());
-                    if(request.description()!=null) existingProduct.setDescription(request.description());
-                    if(request.quantity()!=null) existingProduct.setQuantity(request.quantity());
-                    if(request.imageUrl()!=null) existingProduct.setImageUrl(request.imageUrl());
-                    return productRepository.save(existingProduct);
-                })
+                .map(existingProduct -> mapToProduct(request,existingProduct))
+                .map(productRepository::save)
                 .map(this::mapToResponse)
                 .orElseThrow(()-> new ProductNotFoundException("Product not found"));
-
     }
 
     @Override
